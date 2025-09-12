@@ -6,12 +6,14 @@ from typing import List
 import math
 
 class ExoPosition:
-    def __init__(self, port="/dev/ttyUSB0", baudrate=1000000):
+    def __init__(self, port="COM5", baudrate=1000000):
         self.joint_ids = (8, 9, 10, 11, 12, 13, 14, 15)
         self.driver = DynamixelDriver(self.joint_ids, port=port, baudrate=baudrate)
-        # self.driver.set_position_p_gain(1500)
-        # self.driver.set_current_limit(0)
+        self.driver.set_operating_mode(0)
         self.driver.set_torque_mode(True)
+        # self.driver.set_current_map({15:85},default=-100)
+        self.driver.set_current_map({15: 70, 9:-60}, default=0)
+        self.driver.set_torque_for([10,11,12,13,14], False)
         # 给的偏移量是：   0     -0.7854 ,0 ,-2.3562,0,1.5708, 0 
         self.offset = [3.14159,-3.14159,3.14159,1.5708,3.14159,3.14159,-0.7854, 0, 0]
         self.direction = [1,1,1,1,1,1,1,1,1]
@@ -64,7 +66,7 @@ if __name__ == "__main__":
     last_joints = np.zeros(8)
     while True:
         joints = exo.getPosition()
-        joints = [round(j,5) for j in joints]
+        joints = [round(float(j),5) for j in joints]
         print(f'max idx: {joints.index(max(joints))} ----> {joints}')
 
         # delta_joints = joints - last_joints
